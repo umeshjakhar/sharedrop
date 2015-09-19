@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 var alias = Ember.computed.alias;
 
-export default Ember.View.extend(Ember.ViewTargetActionSupport, {
+export default Ember.Component.extend(Ember.ViewTargetActionSupport, {
     tagName: 'img',
     classNames: ['gravatar'],
     attributeBindings: [
@@ -12,7 +12,6 @@ export default Ember.View.extend(Ember.ViewTargetActionSupport, {
         'data-sending-progress',
         'data-receiving-progress'
     ],
-    peer: alias('controller.model'),
     src: alias('peer.avatarUrl'),
     alt: alias('peer.label'),
     title: alias('peer.uuid'),
@@ -20,29 +19,28 @@ export default Ember.View.extend(Ember.ViewTargetActionSupport, {
     "data-receiving-progress": alias('peer.transfer.receivingProgress'),
 
     didInsertElement: function () {
-        var self = this,
-            peer = this.get('peer'),
-            toggleTransferCompletedClass = function () {
-                var klass = 'transfer-completed';
+        this._super(...arguments);
+        const peer = this.get('peer');
+        const toggleTransferCompletedClass = () => {
+            const klass = 'transfer-completed';
 
-                Ember.run.later(self, function () {
-                    this.$().parent('.avatar')
-                    .addClass(klass)
-                    .delay(2000)
-                    .queue(function () {
-                        Ember.$(this).removeClass(klass).dequeue();
-                    });
-                }, 250);
-            };
+            Ember.run.later(this, function () {
+                this.$().parent('.avatar')
+                .addClass(klass)
+                .delay(2000)
+                .queue(function () {
+                    Ember.$(this).removeClass(klass).dequeue();
+                });
+            }, 250);
+        };
 
         peer.on('didReceiveFile', toggleTransferCompletedClass);
         peer.on('didSendFile', toggleTransferCompletedClass);
-
-        this._super();
     },
 
     willDestroyElement: function () {
-        var peer = this.get('peer');
+        this._super(...arguments);
+        const peer = this.get('peer');
 
         peer.off('didReceiveFile');
         peer.off('didSendFile');
@@ -72,14 +70,12 @@ export default Ember.View.extend(Ember.ViewTargetActionSupport, {
 
     drop: function (event) {
         this.cancelEvent(event);
-
         this.$().parent('.avatar').removeClass('hover');
 
-        var self = this,
-            peer = this.get('peer'),
-            dt = event.originalEvent.dataTransfer,
-            files = dt.files,
-            file = files[0];
+        const peer = this.get('peer');
+        const dt = event.originalEvent.dataTransfer;
+        const files = dt.files;
+        const file = files[0];
 
         if (this.canSendFile()) {
             if (files.length > 1) {
@@ -88,8 +84,8 @@ export default Ember.View.extend(Ember.ViewTargetActionSupport, {
                     errorCode: 'multiple_files'
                 });
             } else {
-                this.isFile(file).then(function () {
-                    self.triggerAction({
+                this.isFile(file).then(() => {
+                    this.triggerAction({
                         action: 'uploadFile',
                         actionContext: {
                             file: file
@@ -106,18 +102,14 @@ export default Ember.View.extend(Ember.ViewTargetActionSupport, {
     },
 
     canSendFile: function () {
-        var peer = this.get('controller.model');
+        const peer = this.get('peer');
 
         // Can't send files if another file transfer is already in progress
-        if (peer.get('transfer.file') || peer.get('transfer.info')) {
-            return false;
-        }
-
-        return true;
+        return !(peer.get('transfer.file') || peer.get('transfer.info'));
     },
 
     isFile: function (file) {
-        return new Promise(function (resolve, reject) {
+        return new Ember.RSVP.Promise(function (resolve, reject) {
             if (file instanceof window.File) {
                 if (file.size > 1048576) {
                     // It's bigger than 1MB, so we assume it's a file
@@ -125,7 +117,7 @@ export default Ember.View.extend(Ember.ViewTargetActionSupport, {
                 } else {
                     // Try to read it using FileReader - if it's not a file,
                     // it should trigger onerror handler
-                    var reader = new FileReader();
+                    const reader = new FileReader();
                     reader.onload = function () { resolve(); };
                     reader.onerror = function () { reject(); };
                     reader.readAsArrayBuffer(file);

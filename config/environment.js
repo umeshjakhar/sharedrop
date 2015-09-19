@@ -18,12 +18,7 @@ module.exports = function (environment) {
       // when it is created
     },
 
-    FIREBASE_URL: process.env.FIREBASE_URL,
-
-    sassOptions: {
-        inputFile: 'app.sass',
-        outputFile: 'share-drop.css'
-    }
+    FIREBASE_URL: process.env.FIREBASE_URL
   };
 
   if (environment === 'development') {
@@ -47,9 +42,7 @@ module.exports = function (environment) {
   }
 
   if (environment === 'production') {
-    ENV.googleAnalytics = {
-      webPropertyId: 'UA-41889586-2'
-    };
+    ENV.GOOGLE_ANALYTICS_ID = 'UA-41889586-2';
   }
 
   ENV.exportApplicationGlobal = true;

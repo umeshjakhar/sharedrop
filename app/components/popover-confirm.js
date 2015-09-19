@@ -4,8 +4,8 @@ export default Ember.Component.extend({
     classNames: ['popover-confirm'],
 
     iconClass: function () {
-        var filename = this.get('filename'),
-            regex, match, extension;
+        const filename = this.get('filename');
+        let regex, match, extension;
 
         if (filename) {
             regex = /\.([0-9a-z]+)$/i;
@@ -36,22 +36,28 @@ export default Ember.Component.extend({
     show: function () {
         // Delay until related properties are computed
         Ember.run.next(this, function () {
-            var html = this.$().html();
+            const element = this.$();
+            if (!element) { return; }
+
+            var html = element.html();
 
             // Content needs to be visible,
             // so that popover position is calculated properly.
-            this.$().show();
-            this.$().popover({
+            element.show();
+            element.popover({
                 html: true,
                 content: html,
                 placement: 'top'
             });
-            this.$().popover('show');
-            this.$().hide();
+            element.popover('show');
+            element.hide();
         });
     },
 
     hide: function () {
+        const element = this.$();
+        if (!element) { return; }
+
         this.$().popover('destroy');
     },
 

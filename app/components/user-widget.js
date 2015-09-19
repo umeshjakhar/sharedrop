@@ -1,14 +1,13 @@
 import Ember from 'ember';
 
-export default Ember.View.extend({
+export default Ember.Component.extend({
     classNames: ['peer'],
     classNameBindings: ['peer.peer.state'],
 
     localIps: function () {
-        // Convert unordered set to sorted array
-        var ips = this.get('controller.model.local_ips');
-        return ips.toArray().sort();
-    }.property('controller.model.local_ips.[]'),
+        // Sort ips array
+        return this.get('user.local_ips').sort();
+    }.property('user.local_ips.[]'),
 
     hasManyLocalIps: function () {
         return this.get('localIps.length') > 1;
